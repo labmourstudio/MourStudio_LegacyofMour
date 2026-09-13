@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#080b14" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta
+      name="description"
+      content="Màn hình công khai của Legacy of Mour Studio. Nội dung chỉ xuất hiện sau khi được quản trị viên duyệt."
+    />
+    <title>Legacy of Mour Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Lora:ital,wght@0,400;0,500;1,400&family=Playfair+Display:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./assets/styles.css" />
+  </head>
+  <body>
+    <div class="sky" aria-hidden="true">
+      <span class="orb orb-one"></span>
+      <span class="orb orb-two"></span>
+      <span class="stars stars-small"></span>
+      <span class="stars stars-large"></span>
+    </div>
+
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="Legacy of Mour Studio — Trang chủ">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <span>
+          <strong>Legacy of Mour</strong>
+          <small>Mour Studio</small>
+        </span>
+      </a>
+
+      <div class="public-label" aria-label="Trạng thái giao diện">
+        <span class="public-dot" aria-hidden="true"></span>
+        Màn hình công khai
+      </div>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">Mouravia · Character Archive</p>
+        <h1 id="page-title">Di sản được viết nên từ những ký ức còn ở lại.</h1>
+        <p class="intro-copy">
+          Không gian công khai của Legacy of Mour sẽ lưu giữ những nhân vật, câu chuyện và
+          tư liệu đã được Mour Studio xác nhận.
+        </p>
+      </section>
+
+      <section class="archive-panel" aria-labelledby="archive-title">
+        <div class="panel-heading">
+          <div>
+            <p class="section-kicker">Hồ sơ công khai</p>
+            <h2 id="archive-title">Danh sách tướng</h2>
+          </div>
+          <span class="count" id="public-count" aria-live="polite">0 nhân vật</span>
+        </div>
+
+        <div class="empty-state" id="empty-state">
+          <div class="empty-symbol" aria-hidden="true">
+            <span>✦</span>
+          </div>
+          <h3>Chưa có hồ sơ nào được công bố</h3>
+          <p>
+            Danh sách sẽ tự xuất hiện tại đây sau khi nội dung được duyệt từ khu quản trị.
+            Các bản nháp và dữ liệu nội bộ không được hiển thị trên màn hình này.
+          </p>
+        </div>
+
+        <div class="character-grid" id="character-grid" hidden></div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Legacy of Mour Studio</span>
+      <span class="footer-note">Public Archive · Bản khởi tạo</span>
+    </footer>
+
+    <noscript>
+      <p class="noscript-note">Trang này cần JavaScript để nhận dữ liệu công khai.</p>
+    </noscript>
+    <script src="./assets/app.js" defer></script>
+  </body>
+</html>
