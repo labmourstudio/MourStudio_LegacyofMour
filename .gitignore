@@ -1,0 +1,46 @@
+# Hệ điều hành và trình soạn thảo
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Phụ thuộc và đầu ra build
+node_modules/
+dist/
+build/
+out/
+.output/
+.cache/
+.sites-runtime/
+coverage/
+
+# Cấu hình và thông tin bí mật
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+private/
+
+# Dữ liệu vận hành và bản sao lưu
+*.sqlite
+*.sqlite3
+*.db
+d1-backup/
+r2-backup/
+exports/private/
+backups/private/
+
+# Tệp đóng gói hoặc nguồn chưa xác minh
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# Nhật ký và tệp tạm
+*.log
+tmp/
+temp/
