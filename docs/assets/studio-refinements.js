@@ -11,7 +11,51 @@ function normalizeVoices(input) {
     });
 }
 
+const DEFAULT_CHAMPION_ROLES=['Pháp Sư','Sát Thủ','Xạ Thủ','Đấu Sĩ','Đỡ Đòn','Trợ Thủ'];
+function roleLabel(value) { return typeof value==='string'?value.normalize('NFC').replace(/\s+/g,' ').trim():''; }
+function roleKey(value) { return roleLabel(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[đĐ]/g,'d').toLocaleLowerCase('vi'); }
+function normalizeRole(value) {
+    const label=roleLabel(value);
+    return DEFAULT_CHAMPION_ROLES.find(role=>roleKey(role)===roleKey(label))||label;
+}
+function championRoleOptions(list) {
+    const roles=new Map(DEFAULT_CHAMPION_ROLES.map(role=>[roleKey(role),role]));
+    for(const champion of list)for(const role of (Array.isArray(champion.roles)?champion.roles:[]).slice(0,2)){
+        const label=normalizeRole(role),key=roleKey(label);
+        if(label&&key!==roleKey('Tất cả')&&!roles.has(key))roles.set(key,label);
+    }
+    return ['Tất cả',...roles.values()];
+}
+function matchesChampionRole(champion,filter) {
+    return roleKey(filter)===roleKey('Tất cả')||(Array.isArray(champion.roles)?champion.roles:[]).slice(0,2).some(role=>roleKey(role)===roleKey(filter));
+}
+function championRoleBadges(champion) {
+    return (Array.isArray(champion.roles)?champion.roles:[]).slice(0,2).map((role,index)=>{
+        const label=normalizeRole(role);if(!label)return '';
+        return `<span class="champion-role ${index===0?'role-primary':'role-secondary'}" title="${index===0?'Vai trò chính':'Vai trò phụ'}">${escapeHtml(label)}</span>`;
+    }).join('');
+}
 let activeRoleFilter='Tất cả', activePositionFilter='';
+function refreshRoleFilters() {
+    const labels=championRoleOptions(champions);
+    activeRoleFilter=labels.find(label=>roleKey(label)===roleKey(activeRoleFilter))||'Tất cả';
+    const buttons=labels.map(label=>{
+        const button=document.createElement('button'),active=label===activeRoleFilter;
+        button.type='button';button.textContent=label;button.dataset.role=label;
+        button.className='liquid-btn'+(active?' active':'');button.setAttribute('aria-pressed',String(active));
+        button.onclick=()=>filterRole(label,button);return button;
+    });
+    document.getElementById('role-filters').replaceChildren(...buttons);
+}
+let roleSaveTimer;
+function syncEditedRoles() {
+    if(!isEditMode||!champions[currentChampIndex])return;
+    const champion=champions[currentChampIndex];
+    champion.roles=[normalizeRole(document.getElementById('p-role1').innerText),normalizeRole(document.getElementById('p-role2').innerText)];
+    hasUnsavedChanges=true;
+    clearTimeout(roleSaveTimer);
+    roleSaveTimer=setTimeout(()=>{if(champions.includes(champion))saveData();},350);
+}
 function refreshPositionFilter() {
     const select=document.getElementById('position-filter');
     const positions=[...new Set(champions.map(c=>(c.position||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'vi'));
@@ -22,10 +66,7 @@ function refreshPositionFilter() {
 }
 function filterPosition(value) { activePositionFilter=value;renderList(activeRoleFilter); }
 function resetChampionFilters() {
-    activeRoleFilter='Tất cả';activePositionFilter='';refreshPositionFilter();
-    document.querySelectorAll('#role-filters button').forEach((button,index)=>{
-        button.classList.toggle('active',index===0);button.setAttribute('aria-pressed',String(index===0));
-    });
+    activeRoleFilter='Tất cả';activePositionFilter='';refreshRoleFilters();refreshPositionFilter();
 }
 
 let voicePlayer=null,voiceSequence=0,voiceMuted=false,voiceUploadCount=0;
@@ -121,6 +162,12 @@ window.addEventListener('pagehide',stopChampionVoice);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopChampionVoice();});
 window.addEventListener('beforeunload',event=>{if(voiceUploadCount){event.preventDefault();event.returnValue='';}});
 document.addEventListener('DOMContentLoaded',()=>{
+    ['p-role1','p-role2'].forEach(id=>{
+        const field=document.getElementById(id);
+        field.addEventListener('input',event=>{if(!event.isComposing)syncEditedRoles();});
+        field.addEventListener('compositionend',syncEditedRoles);
+        field.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.isComposing){event.preventDefault();field.blur();}});
+    });
     const media=matchMedia('(max-width:760px)'),stack=document.getElementById('filter-stack');
     const adapt=()=>{stack.open=!media.matches;};adapt();media.addEventListener('change',adapt);
 });

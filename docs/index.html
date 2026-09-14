@@ -531,7 +531,7 @@ body.effects-paused #star-container{visibility:hidden}body.effects-paused #curso
             const box=document.createElement('div');box.innerHTML=str(settings.logoHtml);const logoText=(box.textContent||'LEGACY OF MOUR').trim();
             return {settings:{gold:color(settings.gold,'#fcfe98'),bg:color(settings.bg,'#004984'),font:["'Lora', serif","'Cinzel', serif","'Playfair Display', serif"].includes(settings.font)?settings.font:"'Cinzel', serif",logoHtml:logoText},champions:data.champions.map((c,i)=>{
                 if(!c||typeof c!=='object'||!Array.isArray(c.skills)||!Array.isArray(c.concepts))throw new Error('Cấu trúc kỹ năng hoặc concept không hợp lệ.');
-                return {id:str(c.id,'c'+i),name:str(c.name,'TƯỚNG MỚI'),title:str(c.title),faction:str(c.faction),position:str(c.position),voices:normalizeVoices(c.voices),roles:Array.isArray(c.roles)?c.roles.slice(0,2).map(x=>str(x)):[],quotes:str(c.quotes)||str(c.quote),avatar:safeImage(c.avatar),splash:safeImage(c.splash),skills:c.skills.map(k=>({type:str(k.type),name:str(k.name),desc:str(k.desc),note:str(k.note),icon:safeImage(k.icon),img:safeImage(k.img)})),concepts:c.concepts.map(k=>({type:str(k.type,'Mặc định'),name:str(k.name,'Concept'),url:safeImage(k.url)}))};
+                return {id:str(c.id,'c'+i),name:str(c.name,'TƯỚNG MỚI'),title:str(c.title),faction:str(c.faction),position:str(c.position),voices:normalizeVoices(c.voices),roles:Array.isArray(c.roles)?c.roles.slice(0,2).map(x=>normalizeRole(str(x))):[],quotes:str(c.quotes)||str(c.quote),avatar:safeImage(c.avatar),splash:safeImage(c.splash),skills:c.skills.map(k=>({type:str(k.type),name:str(k.name),desc:str(k.desc),note:str(k.note),icon:safeImage(k.icon),img:safeImage(k.img)})),concepts:c.concepts.map(k=>({type:str(k.type,'Mặc định'),name:str(k.name,'Concept'),url:safeImage(k.url)}))};
             })};
         }
         async function initApp() {
@@ -648,7 +648,8 @@ body.effects-paused #star-container{visibility:hidden}body.effects-paused #curso
         function autoSaveProfile() {
             if(!isEditMode || currentChampIndex < 0 || !champions[currentChampIndex]) return; const c = champions[currentChampIndex];
             c.name = document.getElementById('p-name').innerText; c.title = document.getElementById('p-title').innerText;
-            c.roles[0] = document.getElementById('p-role1').innerText; c.roles[1] = document.getElementById('p-role2').innerText;
+            clearTimeout(roleSaveTimer);
+            c.roles = [normalizeRole(document.getElementById('p-role1').innerText), normalizeRole(document.getElementById('p-role2').innerText)];
             c.faction = document.getElementById('p-faction').innerText; c.position = document.getElementById('p-position').innerText;
             c.quotes = document.getElementById('p-quote-edit').value;
             
@@ -671,12 +672,11 @@ body.effects-paused #star-container{visibility:hidden}body.effects-paused #curso
         function renderList(roleFilter) {
             const grid = document.getElementById('champion-grid'); grid.innerHTML = '';
             champions.forEach((champ, idx) => {
-                let r1 = champ.roles ? champ.roles[0] : ""; let r2 = champ.roles ? champ.roles[1] : "";
-                if ((roleFilter === 'Tất cả' || r1 === roleFilter || r2 === roleFilter)&&(!activePositionFilter||(champ.position||'').trim()===activePositionFilter)) {
+                if (matchesChampionRole(champ,roleFilter)&&(!activePositionFilter||(champ.position||'').trim()===activePositionFilter)) {
                     grid.innerHTML += `
                         <div class="champion-card liquid-glass rounded-2xl cursor-pointer group aspect-[3/4] relative overflow-hidden p-1.5 shadow-xl transition-all duration-300 hover:shadow-[0_15px_30px_rgba(212,175,55,0.4)] hover:-translate-y-2 border border-transparent hover:border-gold/30" onclick="openProfile(${idx})">
                             <img src="${escapeHtml(champ.avatar)}" class="w-full h-full object-cover rounded-xl transition duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100 bg-black">
-                            <div class="champion-caption absolute bottom-1 left-1 right-1 bg-gradient-to-t from-black via-black/90 to-transparent pt-12 pb-3 text-center font-title text-base font-bold tracking-widest text-gold z-10 uppercase rounded-b-xl">${escapeHtml(champ.name)}</div>
+                            <div class="champion-caption absolute bottom-1 left-1 right-1 bg-gradient-to-t from-black via-black/90 to-transparent pt-12 pb-3 text-center font-title text-base font-bold tracking-widest text-gold z-10 uppercase rounded-b-xl">${escapeHtml(champ.name)}<div class="champion-roles">${championRoleBadges(champ)}</div></div>
                         </div>
                     `;
                 }

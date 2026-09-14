@@ -56,3 +56,27 @@ test('oversized and long uploads leave existing voice untouched',async()=>{
  await run('uploadChampionVoice(input,0)');assert.equal(context.saves,0);assert.equal(context.champions[0].voices[0],clip);
  context.input.files[0].size=500;run('voiceFileDuration=async()=>31');await run('uploadChampionVoice(input,0)');assert.equal(context.saves,0);assert.equal(context.champions[0].voices[0],clip);
 });
+test('both role slots create custom filters and match legacy spacing, accents and case',()=>{
+ const {context,run}=fixture();
+ context.champions=[{roles:['  ĐẤU   SĨ\n','Dị Năng']},{roles:['Dị Năng','phap su']}];
+ const labels=Array.from(run('championRoleOptions(champions)'));
+ assert.equal(labels.filter(x=>x==='Đấu Sĩ').length,1);
+ assert.equal(labels.filter(x=>x==='Dị Năng').length,1);
+ assert.equal(labels.filter(x=>x==='Pháp Sư').length,1);
+ assert.equal(run("matchesChampionRole(champions[0],'Đấu Sĩ')"),true);
+ assert.equal(run("matchesChampionRole(champions[0],'dị năng')"),true);
+ assert.equal(run("matchesChampionRole(champions[1],'Pháp Sư')"),true);
+ assert.equal(run("matchesChampionRole(champions[0],'Xạ Thủ')"),false);
+ context.champions[0].roles[1]='';context.champions[1].roles[0]='';
+ assert.equal(run("championRoleOptions(champions).includes('Dị Năng')"),false);
+});
+test('role editing updates the record before blur and persists both fields together',async()=>{
+ const {context,run}=fixture();context.isEditMode=true;
+ run("document.getElementById('p-role1').innerText='  đấu sĩ ';document.getElementById('p-role2').innerText='Dị Năng';syncEditedRoles()");
+ assert.deepEqual(Array.from(context.champions[0].roles),['Đấu Sĩ','Dị Năng']);
+ assert.equal(run("matchesChampionRole(champions[0],'Dị Năng')"),true);
+ run("document.getElementById('p-role2').innerText='Trợ   Thủ';syncEditedRoles()");
+ await new Promise(resolve=>setTimeout(resolve,400));
+ assert.equal(context.saves,1);assert.deepEqual(Array.from(context.champions[0].roles),['Đấu Sĩ','Trợ Thủ']);
+ assert.equal(run("matchesChampionRole(champions[0],'Dị Năng')"),false);
+});
