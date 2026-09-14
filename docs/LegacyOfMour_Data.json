@@ -1,0 +1,71 @@
+{
+  "settings": {
+    "gold": "#fcfe98",
+    "bg": "#004984",
+    "font": "'Lora', serif",
+    "logo1": "LEGACY",
+    "logo2": "of",
+    "logo3": "MOUR",
+    "logoHtml": "\n                    LEGACY OF MOUR\n                "
+  },
+  "champions": [
+    {
+      "id": "c1",
+      "name": "LUNIS",
+      "title": "Thánh Nguyệt Giáng Sinh",
+      "faction": "Hội Đồng Phép Thuật",
+      "roles": [
+        "Pháp Sư",
+        "Trợ Thủ"
+      ],
+      "quote": "Ánh trăng sẽ soi sáng con đường...",
+      "avatar": "empty-art.svg",
+      "splash": "empty-art.svg",
+      "concepts": [],
+      "skills": [
+        {
+          "type": "NỘI TẠI",
+          "name": "Ánh Trăng",
+          "desc": "Đòn đánh thường gây phép.",
+          "note": "Ghi chú...",
+          "icon": "empty-art.svg",
+          "img": "empty-art.svg"
+        },
+        {
+          "type": "Chiêu mới",
+          "name": "Tên Chiêu",
+          "desc": "Mô tả...",
+          "note": "Ghi chú...",
+          "icon": "empty-art.svg",
+          "img": "empty-art.svg"
+        },
+        {
+          "type": "CHIÊU MỚI",
+          "name": "Tên Chiêu",
+          "desc": "Mô tả...",
+          "note": "Ghi chú...",
+          "icon": "empty-art.svg",
+          "img": "empty-art.svg"
+        },
+        {
+          "type": "Chiêu mới",
+          "name": "Tên Chiêu",
+          "desc": "Mô tả...",
+          "note": "Ghi chú...",
+          "icon": "empty-art.svg",
+          "img": "empty-art.svg"
+        },
+        {
+          "type": "Chiêu mới",
+          "name": "Tên Chiêu",
+          "desc": "Mô tả...",
+          "note": "Ghi chú...",
+          "icon": "empty-art.svg",
+          "img": "empty-art.svg"
+        }
+      ],
+      "position": "",
+      "quotes": "Ánh trăng sẽ soi sáng con đường..."
+    }
+  ]
+}

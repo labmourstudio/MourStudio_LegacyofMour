@@ -1,0 +1,11 @@
+LEGACY OF MOUR STUDIO — BỘ BÀN GIAO
+
+Gồm website HTML/CSS/JavaScript, các thư viện và font được đóng gói, cùng dữ liệu LUNIS ban đầu.
+
+Để tiếp tục phát triển ở cuộc trò chuyện hoặc công cụ khác: gửi toàn bộ file ZIP này và mô tả thay đổi bạn muốn.
+
+Dữ liệu mới bạn nhập hoặc sửa trong trình duyệt KHÔNG tự nằm trong bộ ZIP này. Hãy bật Chế độ Sửa > Xuất File trên website rồi gửi kèm file JSON mới nhất. File JSON xuất ra có cả ảnh đã lưu.
+
+Website hiện lưu dữ liệu riêng trên từng trình duyệt, chưa có hệ thống tài khoản admin hoặc đồng bộ dữ liệu chung. Bộ mã nguồn không chuyển quyền sở hữu hay địa chỉ của website đang được lưu trữ.
+
+Splashart được cắt 16:9, lưu JPEG chất lượng 0.94 với chiều rộng tối đa 2560 px, không phóng lớn ảnh nhỏ. Icon 150 px, avatar 400 px; ảnh khác 1000 px.

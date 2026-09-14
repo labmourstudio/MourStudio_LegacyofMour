@@ -1,88 +1,860 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#080b14" />
-    <meta name="robots" content="noindex, nofollow" />
-    <meta
-      name="description"
-      content="Màn hình công khai của Legacy of Mour Studio. Nội dung chỉ xuất hiện sau khi được quản trị viên duyệt."
-    />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Legacy of Mour Studio</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Lora:ital,wght@0,400;0,500;1,400&family=Playfair+Display:wght@500;600&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="./assets/styles.css" />
-  </head>
-  <body>
-    <div class="sky" aria-hidden="true">
-      <span class="orb orb-one"></span>
-      <span class="orb orb-two"></span>
-      <span class="stars stars-small"></span>
-      <span class="stars stars-large"></span>
+<meta name="description" content="Không gian sáng tạo Legacy of Mour — hồ sơ tướng, kỹ năng và concept art.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23050b14'/%3E%3Cpath d='m16 4 3 9 9 3-9 3-3 9-3-9-9-3 9-3z' fill='%23fcfe98'/%3E%3C/svg%3E">
+<script>window.mourBootTimer=setTimeout(function(){var e=document.getElementById('db-loading');if(e){e.style.display='none';e.style.pointerEvents='none'}},1500);</script>
+    
+    <!-- CSS Tailwind -->
+    <script src="asset-0.js"></script>
+    
+    <!-- Cropper JS -->
+    <link rel="stylesheet" href="asset-1.css">
+    <script src="asset-2.js"></script>
+    
+    <!-- LocalForage (IndexedDB) -->
+    <script src="asset-3.js"></script>
+
+    <!-- Fonts -->
+    <link href="asset-4.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #050b14; 
+            --gold-color: #d4af37;
+            --font-title: 'Cinzel', serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden; 
+            margin: 0;
+            /* Sơn dầu mờ ảo */
+            background-image: 
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E"), 
+                radial-gradient(circle at 50% 0%, rgba(12, 35, 65, 0.8) 0%, var(--bg-color) 100%);
+            background-attachment: fixed;
+            user-select: none;
+        }
+
+        /* --- STREAMING_CHUNK: Quản lý Màn Hình --- */
+        .screen { 
+            display: none !important; opacity: 0; 
+            width: 100vw; height: 100vh; 
+            position: fixed; inset: 0; 
+            transition: opacity 0.4s ease-in-out; 
+            overflow: hidden;
+            z-index: 10;
+        }
+        .screen.active { 
+            display: flex !important; opacity: 1; 
+            animation: fadeIn 0.4s ease-out forwards; 
+        }
+        
+        #screen-home { flex-direction: column; align-items: center; justify-content: center; }
+        #screen-list { flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; }
+        #screen-profile { flex-direction: column; position: relative; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+
+        /* --- STREAMING_CHUNK: Kính Lỏng (Liquid Glass) --- */
+        .liquid-glass {
+            background: rgba(10, 15, 25, 0.1); 
+            backdrop-filter: blur(25px) saturate(130%); 
+            -webkit-backdrop-filter: blur(25px) saturate(130%);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            border-left: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(255,255,255,0.01);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .liquid-glass:hover {
+            background: rgba(20, 30, 45, 0.2);
+            border-color: rgba(212, 175, 55, 0.3);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(212, 175, 55, 0.15), inset 0 0 25px rgba(255,255,255,0.03);
+        }
+        .liquid-btn { cursor: pointer; }
+        .liquid-btn:active { transform: scale(0.95); }
+
+        .text-gold { color: var(--gold-color); }
+        .border-gold { border-color: var(--gold-color); }
+        .bg-gold { background-color: var(--gold-color); }
+        .font-title { font-family: var(--font-title); }
+
+        /* --- STREAMING_CHUNK: Hào quang & Sao --- */
+        #star-container { position: fixed; inset: 0; pointer-events: none; z-index: 110; overflow: hidden; opacity: .7; }
+        .falling-star { position: absolute; background: var(--gold-color); border-radius: 50%; box-shadow: 0 0 8px var(--gold-color); opacity: 0; animation: fall linear infinite; }
+        @keyframes fall { 0% { transform: translateY(-5vh) translateX(0); opacity: 0; } 20% { opacity: 0.6; } 80% { opacity: 0.6; } 100% { transform: translateY(105vh) translateX(30px); opacity: 0; } }
+        
+        #cursor-glow {
+            position: fixed; width: 500px; height: 500px;
+            background: radial-gradient(circle, color-mix(in srgb, var(--gold-color) 12%, transparent) 0%, transparent 65%);
+            border-radius: 50%; pointer-events: none;
+            transform: translate(-50%, -50%); z-index: 111; 
+            transition: opacity 0.5s ease; opacity: 0; mix-blend-mode: screen;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .safe-glow { overflow: visible !important; } 
+
+        /* Auto-hide Tàng hình */
+        .auto-hide { transition: opacity 0.8s ease-in-out; }
+        .auto-hide.idle { opacity: 0 !important; pointer-events: none !important; }
+
+        /* --- STREAMING_CHUNK: Edit Mode --- */
+        .editable { transition: 0.2s; outline: none; cursor: default; border-bottom: 1px dashed transparent; }
+        body.edit-mode .editable { cursor: text; border-bottom-color: rgba(255,255,255,0.3); }
+        body.edit-mode .editable:hover { background: rgba(255,255,255,0.05); border-bottom-color: var(--gold-color); }
+        .edit-only { display: none !important; }
+        body.edit-mode .edit-only { display: flex !important; }
+        .edit-only-inline { display: none !important; }
+        body.edit-mode .edit-only-inline { display: inline-flex !important; }
+        body.edit-mode .auto-hide.idle { opacity: 1 !important; pointer-events: auto !important; }
+
+        .star-fantasy { color: var(--gold-color); font-size: 1.2rem; filter: drop-shadow(0 0 10px rgba(212,175,55,0.8)); display: inline-block; transform: scaleY(1.3) scaleX(0.8); }
+
+        /* --- STREAMING_CHUNK: Tabs Hồ Sơ Tướng --- */
+        .profile-tab { 
+            display: none !important; 
+            width: 100%; height: 100%; 
+            position: absolute; inset: 0; 
+            z-index: 20;
+        }
+        .profile-tab.active-tab { 
+            display: flex !important; 
+            animation: fadeIn 0.4s ease forwards; 
+        }
+
+        #tab-overview { padding: 0 80px 120px 80px; flex-direction: column; justify-content: flex-end; align-items: flex-start; }
+        #tab-concept, #tab-skills { flex-direction: column; justify-content: center; align-items: center; }
+
+        .drawer-container { width: 100%; max-width: 1400px; height: 65vh; display: flex; gap: 24px; padding: 0 40px; margin-top: -40px; }
+        .drawer-list { width: 320px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; padding-right: 12px; border-right: 1px solid rgba(255,255,255,0.1); }
+        .drawer-main { flex-grow: 1; position: relative; display: flex; flex-direction: column; gap: 16px; justify-content: center;}
+        
+        .drawer-list-item { transition: all 0.3s; cursor: pointer; border: 1px solid transparent; }
+        .drawer-list-item:hover { background: rgba(255,255,255,0.05); }
+        .drawer-list-item.active { border-color: rgba(212,175,55,0.4); background: rgba(0,0,0,0.4); box-shadow: inset 0 0 20px rgba(212,175,55,0.1); }
+        .drawer-list-item.active img, .drawer-list-item.active .icon-ring { border-color: var(--gold-color); box-shadow: 0 0 15px rgba(212,175,55,0.3); }
+
+        .hud-nav-btn { color: rgba(255,255,255,0.4); transition: 0.3s; cursor: pointer; position: relative; padding-bottom: 5px; }
+        .hud-nav-btn:hover { color: white; }
+        .hud-nav-btn.active { color: var(--gold-color); font-weight: bold; text-shadow: 0 0 15px rgba(212,175,55,0.6); }
+        .hud-nav-btn.active::after { content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); width: 100%; height: 2px; background: var(--gold-color); box-shadow: 0 0 10px var(--gold-color); }
+
+        /* Loader */
+        #db-loading { position: fixed; inset: 0; background: var(--bg-color); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gold-color); font-family: var(--font-title); letter-spacing: 0.2em; transition: opacity 0.5s ease;}
+        .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--gold-color); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    
+#save-status{position:fixed;bottom:8px;left:18px;z-index:110;font:11px/1.5 'Segoe UI',sans-serif;color:#c5ccd4;opacity:.7;max-width:75vw;pointer-events:none}#save-status[data-error="true"]{color:#ffb4a9;opacity:1}
+#crop-modal,#settings-modal{z-index:1000}#custom-overlay{z-index:11000}
+.screen{height:100dvh}.drawer-container{margin-top:0;min-height:0;height:calc(100dvh - 240px)}.drawer-list{flex:0 0 280px;overflow-y:auto!important;overflow-x:hidden!important;padding:14px!important}.drawer-main{min-width:0;overflow-y:auto!important;overflow-x:hidden!important;justify-content:flex-start;padding:14px!important}.drawer-main>.aspect-video{flex-shrink:0}.drawer-main>div{flex-shrink:0}
+#tab-overview{overflow-y:auto;padding-top:100px}body.edit-mode #tab-overview{justify-content:flex-start}
+#tab-concept,#tab-skills{padding-top:90px;padding-bottom:100px;justify-content:flex-start}
+#screen-home{padding:24px}#logo-text{font-size:clamp(1.8rem,5.3vw,4.5rem)}#p-name{overflow-wrap:anywhere}
+button:focus-visible,[tabindex]:focus-visible,.editable:focus-visible{outline:2px solid var(--gold-color);outline-offset:4px}img{color:transparent}.empty-note{font-size:13px;line-height:1.7;color:#b7c0cc;padding:20px}
+@media(max-width:760px){#studio-toolbar{top:12px;right:12px;left:12px;justify-content:flex-end;gap:6px;flex-wrap:wrap}#studio-toolbar button{padding:9px 12px;letter-spacing:.04em}#save-status{font-size:9px;bottom:4px}#screen-profile>.auto-hide:first-of-type{top:68px;left:12px;max-width:95vw;padding:8px 12px;gap:8px}#tab-overview{padding:120px 24px 110px;justify-content:center}#p-name{font-size:clamp(3rem,15vw,5rem)}#p-title{font-size:1.4rem}#p-quote-display{font-size:1rem}#tab-overview .min-w-\[140px\]{min-width:110px;padding:10px 14px}#tab-overview .edit-only .flex{flex-wrap:wrap}#tab-concept,#tab-skills{padding-top:120px;overflow-y:auto}#tab-concept>div:first-child,#tab-skills>div:first-child{padding:0 20px!important;flex-wrap:wrap;gap:14px;margin-bottom:15px}#tab-concept h2,#tab-skills h2{font-size:1.1rem}.drawer-container{height:auto;flex-direction:column;padding:0 16px;gap:8px}.drawer-list{flex:0 0 auto;width:100%;max-height:180px;flex-direction:row;overflow-x:auto!important;border-right:0}.drawer-list-item{flex:0 0 200px;padding:12px}.drawer-list-item img.aspect-video{height:76px}.drawer-main{overflow:visible!important;padding:8px!important}#screen-profile>.bottom-6{bottom:22px;width:max-content;max-width:95vw;gap:14px;padding:12px 18px;font-size:10px}#screen-profile>.top-1\/2{width:28px;height:36px;top:52%}#screen-profile>.left-4{left:0}#screen-profile>.right-4{right:0}#skill-type-text{left:14px;top:14px;padding:8px 12px;max-width:52%;font-size:8px}.drawer-main label{right:12px;top:12px;padding:8px;font-size:8px}#crop-modal h3{font-size:1rem}#crop-modal button{padding:12px 18px}#settings-modal{padding:18px}#screen-list>div{height:auto}#role-filters{gap:8px}#role-filters button{padding:8px 12px}}
+@media(hover:none){.auto-hide.idle{opacity:1!important;pointer-events:auto!important}#cursor-glow{display:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}#cursor-glow{display:none}}
+
+
+#cursor-trail{position:fixed;inset:0;width:100%;height:100%;z-index:112;pointer-events:none;mix-blend-mode:screen}
+.twinkle-star{position:absolute;border-radius:50%;background:var(--gold-color);box-shadow:0 0 8px var(--gold-color);animation:twinkle 5s ease-in-out infinite alternate}
+@keyframes twinkle{from{opacity:.12;transform:scale(.65)}to{opacity:.85;transform:scale(1.15)}}
+body.effects-paused #star-container{visibility:hidden}body.effects-paused #cursor-glow,body.effects-paused #cursor-trail{visibility:hidden}
+@media(hover:none){#cursor-trail{display:none}}
+@media(prefers-reduced-motion:reduce){#cursor-trail,#cursor-glow{display:none}.falling-star{display:none}.twinkle-star{opacity:.28;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="save-status" role="status" aria-live="polite">Dữ liệu được lưu trên trình duyệt này</div>
+    <div id="cursor-glow" aria-hidden="true"></div>
+    <div id="star-container" aria-hidden="true"></div>
+    <canvas id="cursor-trail" aria-hidden="true"></canvas>
+
+    <!-- Màn hình Loading cứng (Sẽ tự hủy sau 1.5s dù có lỗi hay không) -->
+    <div id="db-loading">
+        <div class="spinner mb-4"></div>
+        <p id="loading-text">ĐANG TẢI DỮ LIỆU STUDIO...</p>
     </div>
 
-    <header class="site-header">
-      <a class="brand" href="./" aria-label="Legacy of Mour Studio — Trang chủ">
-        <span class="brand-mark" aria-hidden="true">✦</span>
-        <span>
-          <strong>Legacy of Mour</strong>
-          <small>Mour Studio</small>
-        </span>
-      </a>
+    <!-- --- STREAMING_CHUNK: HUD Điều hướng chung --- -->
+    <div id="studio-toolbar" class="fixed top-6 right-6 z-[100] flex gap-4 items-center auto-hide">
+        <button class="edit-only liquid-glass rounded-full liquid-btn px-6 py-2.5 text-[10px] text-gray-300 hover:text-white font-bold tracking-widest uppercase" onclick="exportData()" title="Lưu Backup">💾 Xuất File</button>
+        <button class="edit-only liquid-glass rounded-full liquid-btn px-6 py-2.5 text-[10px] text-gray-300 hover:text-white font-bold tracking-widest uppercase" onclick="document.getElementById('import-file').click()" title="Phục hồi từ máy">📂 Nhập File</button>
+        <input type="file" id="import-file" accept=".json" class="hidden" onchange="importData(event)">
+        
+        <button class="edit-only liquid-glass rounded-full liquid-btn w-10 h-10 flex items-center justify-center text-gray-300 hover:text-gold" onclick="openSettings()">⚙️</button>
+        <button id="mode-toggle" class="liquid-glass rounded-full liquid-btn border-gold text-gold px-6 py-2.5 text-[10px] font-bold tracking-widest hover:bg-gold hover:text-black transition-all uppercase shadow-lg" onclick="requestToggleEditMode()">👁 Chế độ: Xem</button>
+    </div>
 
-      <div class="public-label" aria-label="Trạng thái giao diện">
-        <span class="public-dot" aria-hidden="true"></span>
-        Màn hình công khai
-      </div>
-    </header>
+    <!-- --- STREAMING_CHUNK: Screen Trang Chủ --- -->
+    <div id="screen-home" class="screen active">
+        <div class="flex items-center justify-center mb-10 safe-glow">
+            <span class="star-fantasy mr-6 text-2xl">✦</span>
+            <!-- Logo đã được thu nhỏ xuống text-5xl / lg:text-[4.5rem] -->
+            <h1 class="font-title font-black text-4xl md:text-5xl lg:text-[4.5rem] tracking-[0.2em] editable text-transparent bg-clip-text uppercase drop-shadow-[0_15px_30px_rgba(0,0,0,1)] text-center leading-tight py-2" 
+                style="background-image: linear-gradient(to bottom, #ffffff 0%, var(--gold-color) 70%, #8a6d1c 100%);" 
+                id="logo-text">
+                LEGACY OF MOUR
+            </h1>
+            <span class="star-fantasy ml-6 text-2xl">✦</span>
+        </div>
+        
+        <button class="liquid-glass rounded-full liquid-btn border border-gold/40 text-gold font-title text-sm px-10 py-3.5 tracking-[0.2em] hover:scale-105 hover:bg-gold/10 transition-all flex items-center gap-4 group uppercase" onclick="navigateTo('list')">
+            <span class="star-fantasy text-[10px] opacity-50 group-hover:opacity-100 transition">✦</span> 
+            DANH SÁCH TƯỚNG 
+            <span class="star-fantasy text-[10px] opacity-50 group-hover:opacity-100 transition">✦</span>
+        </button>
+    </div>
 
-    <main>
-      <section class="intro" aria-labelledby="page-title">
-        <p class="eyebrow">Mouravia · Character Archive</p>
-        <h1 id="page-title">Di sản được viết nên từ những ký ức còn ở lại.</h1>
-        <p class="intro-copy">
-          Không gian công khai của Legacy of Mour sẽ lưu giữ những nhân vật, câu chuyện và
-          tư liệu đã được Mour Studio xác nhận.
-        </p>
-      </section>
+    <!-- --- STREAMING_CHUNK: Screen Danh Sách Tướng --- -->
+    <div id="screen-list" class="screen w-full h-full pt-10 pb-20">
+        <div class="max-w-[1400px] mx-auto w-full flex flex-col items-center px-6 h-full justify-start mt-8 relative">
+            
+            <div class="w-full flex justify-start mb-8 absolute top-0 left-6 auto-hide">
+                <div class="liquid-glass rounded-full px-6 py-2 flex items-center gap-3 text-[10px] font-title tracking-widest uppercase">
+                    <span class="text-gray-400 hover:text-white cursor-pointer transition" onclick="navigateTo('home')">TRANG CHỦ</span>
+                    <span class="text-gray-600">/</span>
+                    <span class="text-gold font-bold">DANH SÁCH</span>
+                </div>
+            </div>
+            
+            <h2 class="text-3xl md:text-4xl font-title text-gold text-center mb-8 mt-14 tracking-widest uppercase flex justify-center items-center gap-6 drop-shadow-2xl">
+                <span class="star-fantasy">✦</span> TẤT CẢ TƯỚNG <span class="star-fantasy">✦</span>
+            </h2>
 
-      <section class="archive-panel" aria-labelledby="archive-title">
-        <div class="panel-heading">
-          <div>
-            <p class="section-kicker">Hồ sơ công khai</p>
-            <h2 id="archive-title">Danh sách tướng</h2>
-          </div>
-          <span class="count" id="public-count" aria-live="polite">0 nhân vật</span>
+            <div class="flex flex-wrap justify-center gap-4 mb-12" id="role-filters">
+                <button class="liquid-glass rounded-full liquid-btn px-8 py-2.5 text-xs text-gray-300 active border-gold text-gold" onclick="filterRole('Tất cả', this)">Tất cả</button>
+                <button class="liquid-glass rounded-full liquid-btn px-8 py-2.5 text-xs text-gray-300" onclick="filterRole('Pháp Sư', this)">Pháp Sư</button>
+                <button class="liquid-glass rounded-full liquid-btn px-8 py-2.5 text-xs text-gray-300" onclick="filterRole('Sát Thủ', this)">Sát Thủ</button>
+                <button class="liquid-glass rounded-full liquid-btn px-8 py-2.5 text-xs text-gray-300" onclick="filterRole('Xạ Thủ', this)">Xạ Thủ</button>
+                <button class="liquid-glass rounded-full liquid-btn px-8 py-2.5 text-xs text-gray-300" onclick="filterRole('Đấu Sĩ', this)">Đấu Sĩ</button>
+                <button class="liquid-glass rounded-full liquid-btn px-8 py-2.5 text-xs text-gray-300" onclick="filterRole('Đỡ Đòn', this)">Đỡ Đòn</button>
+                <button class="liquid-glass rounded-full liquid-btn px-8 py-2.5 text-xs text-gray-300" onclick="filterRole('Trợ Thủ', this)">Trợ Thủ</button>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8 w-full max-w-7xl mx-auto" id="champion-grid">
+                <!-- Render bằng JS -->
+            </div>
+            
+            <div class="flex justify-center mt-16 edit-only w-full">
+                <button class="liquid-glass rounded-full liquid-btn border-blue-500/40 text-blue-300 hover:bg-blue-900/40 px-12 py-3.5 font-bold tracking-widest text-xs uppercase shadow-[0_0_20px_rgba(59,130,246,0.2)]" onclick="addNewChampion()">+ TẠO TƯỚNG MỚI</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- --- STREAMING_CHUNK: Screen Hồ Sơ Tướng --- -->
+    <div id="screen-profile" class="screen bg-black">
+        <img id="p-splash-bg" src="empty-art.svg" class="absolute inset-0 w-full h-full object-cover transition-all duration-700 pointer-events-none z-0">
+        <div class="absolute inset-0 bg-black/40 pointer-events-none z-10 transition-all duration-500" id="p-gradient-overlay"></div>
+
+        <!-- Breadcrumbs Góc trái -->
+        <div class="absolute top-6 left-6 z-[100] flex items-center gap-3 text-[10px] font-title tracking-widest uppercase liquid-glass rounded-full px-6 py-2 auto-hide shadow-lg">
+            <span class="text-gray-400 hover:text-white cursor-pointer transition" onclick="navigateTo('home')">TRANG CHỦ</span>
+            <span class="text-gray-600">/</span>
+            <span class="text-gray-400 hover:text-white cursor-pointer transition" onclick="navigateTo('list')">DANH SÁCH</span>
+            <span class="text-gray-600">/</span>
+            <span class="text-gold font-bold editable" id="bc-champ-name">TÊN TƯỚNG</span>
         </div>
 
-        <div class="empty-state" id="empty-state">
-          <div class="empty-symbol" aria-hidden="true">
-            <span>✦</span>
-          </div>
-          <h3>Chưa có hồ sơ nào được công bố</h3>
-          <p>
-            Danh sách sẽ tự xuất hiện tại đây sau khi nội dung được duyệt từ khu quản trị.
-            Các bản nháp và dữ liệu nội bộ không được hiển thị trên màn hình này.
-          </p>
+        <!-- Mũi tên chuyển tướng (Nằm sát viền trái/phải) -->
+        <div class="liquid-glass rounded-full liquid-btn absolute top-1/2 left-4 -translate-y-1/2 z-[60] w-12 h-12 flex items-center justify-center text-white/50 hover:text-gold hover:scale-110 auto-hide shadow-lg" onclick="prevChampion()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><path d="M15 19l-7-7 7-7"/></svg>
+        </div>
+        <div class="liquid-glass rounded-full liquid-btn absolute top-1/2 right-4 -translate-y-1/2 z-[60] w-12 h-12 flex items-center justify-center text-white/50 hover:text-gold hover:scale-110 auto-hide shadow-lg" onclick="nextChampion()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><path d="M9 19l7-7-7-7"/></svg>
         </div>
 
-        <div class="character-grid" id="character-grid" hidden></div>
-      </section>
-    </main>
+        <!-- --- TAB 1: TỔNG QUAN (Vị trí chuẩn Cinematic) --- -->
+        <div id="tab-overview" class="profile-tab active-tab">
+            <div class="w-full max-w-[1400px] mx-auto flex flex-col items-start safe-glow z-20">
+                <div class="text-gold font-title text-3xl md:text-5xl italic editable drop-shadow-[0_5px_10px_rgba(0,0,0,0.8)] mb-2" id="p-title">Danh xưng</div>
+                <h1 class="text-[5rem] md:text-[8rem] font-title font-black text-white uppercase tracking-widest drop-shadow-[0_15px_40px_rgba(0,0,0,1)] editable leading-none mb-8" id="p-name">TÊN TƯỚNG</h1>
+                
+                <div class="flex flex-wrap justify-start gap-4 mb-6">
+                    <div class="liquid-glass rounded-2xl px-6 py-3 min-w-[140px] border-b-2 border-b-gold">
+                        <div class="text-gray-400 text-[9px] uppercase tracking-[0.2em] mb-1">Vai Trò Chính</div>
+                        <div class="text-gold font-bold text-base editable" id="p-role1">Pháp Sư</div>
+                    </div>
+                    <div class="liquid-glass rounded-2xl px-6 py-3 min-w-[140px] border-b-2 border-b-blue-400">
+                        <div class="text-gray-400 text-[9px] uppercase tracking-[0.2em] mb-1">Vai Trò Phụ</div>
+                        <div class="text-blue-300 font-bold text-base editable" id="p-role2">Trợ Thủ</div>
+                    </div>
+                    <div class="liquid-glass rounded-2xl px-6 py-3 min-w-[140px] border-b-2 border-b-purple-400">
+                        <div class="text-gray-400 text-[9px] uppercase tracking-[0.2em] mb-1">Phe Phái</div>
+                        <div class="text-purple-300 font-bold text-base editable" id="p-faction">Hội Đồng</div>
+                    </div>
+                    <div class="liquid-glass rounded-2xl px-6 py-3 min-w-[140px] border-b-2 border-b-green-400">
+                        <div class="text-gray-400 text-[9px] uppercase tracking-[0.2em] mb-1">Vị Trí</div>
+                        <div class="text-green-300 font-bold text-base editable" id="p-position">Đường Giữa</div>
+                    </div>
+                </div>
 
-    <footer>
-      <span>Legacy of Mour Studio</span>
-      <span class="footer-note">Public Archive · Bản khởi tạo</span>
-    </footer>
+                <div class="text-gray-300 italic font-title text-xl md:text-2xl drop-shadow-2xl max-w-3xl border-l-4 border-gold pl-6 py-2 bg-black/30 rounded-r-xl" id="p-quote-display">"Câu thoại..."</div>
+                
+                <!-- Chế độ Sửa (Edit mode UI) -->
+                <div class="edit-only mt-6 w-full flex-col gap-4">
+                    <div class="liquid-glass rounded-2xl p-4 w-full max-w-2xl">
+                        <div class="text-[9px] text-gold mb-2 uppercase tracking-widest">KHO THOẠI (Mỗi câu 1 dòng)</div>
+                        <textarea id="p-quote-edit" class="w-full bg-transparent text-gray-200 outline-none border-b border-gray-600 focus:border-gold resize-y min-h-[60px] text-sm"></textarea>
+                    </div>
+                    <div class="flex gap-4">
+                        <label class="liquid-glass rounded-full liquid-btn px-6 py-2.5 text-xs text-white border-gold/50 font-bold tracking-widest shadow-lg cursor-pointer uppercase hover:bg-white/10">
+                            📸 ĐỔI SPLASH (16:9 • HQ) <input type="file" accept="image/*" class="hidden" onchange="triggerCrop(this, 'splash')">
+                        </label>
+                        <label class="liquid-glass rounded-full liquid-btn px-6 py-2.5 text-xs text-white border-blue-400/50 font-bold tracking-widest shadow-lg cursor-pointer uppercase hover:bg-white/10">
+                            📸 ĐỔI AVATAR (3:4) <input type="file" accept="image/*" class="hidden" onchange="triggerCrop(this, 'avatar')">
+                        </label>
+                        <button class="liquid-glass rounded-full liquid-btn px-6 py-2.5 text-xs text-red-400 border-red-500/30 font-bold tracking-widest uppercase hover:bg-red-900/30" onclick="deleteChampion()">⚠ XÓA TƯỚNG</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <noscript>
-      <p class="noscript-note">Trang này cần JavaScript để nhận dữ liệu công khai.</p>
-    </noscript>
-    <script src="./assets/app.js" defer></script>
-  </body>
+        <!-- --- STREAMING_CHUNK: TAB 2: CONCEPT (Drawer) --- -->
+        <div id="tab-concept" class="profile-tab">
+            <div class="w-full max-w-[1400px] flex justify-between items-end mb-6 safe-glow px-10 mx-auto">
+                <h2 class="text-2xl font-title text-gold flex items-center gap-3 tracking-widest uppercase drop-shadow-lg"><span class="star-fantasy">✦</span> CONCEPT ART & SKIN</h2>
+                <div class="edit-only flex gap-4">
+                    <label class="liquid-glass rounded-full liquid-btn px-5 py-2 text-[10px] cursor-pointer hover:text-gold text-gray-300 font-bold tracking-widest uppercase">
+                        + THÊM MẶC ĐỊNH (Max 3) <input type="file" class="hidden" accept="image/*" onchange="triggerCrop(this, 'concept_add_default')">
+                    </label>
+                    <label class="liquid-glass rounded-full liquid-btn px-5 py-2 text-[10px] cursor-pointer hover:text-purple-400 text-gray-300 border-purple-500/30 font-bold tracking-widest uppercase">
+                        + THÊM SKIN <input type="file" class="hidden" accept="image/*" onchange="triggerCrop(this, 'concept_add_skin')">
+                    </label>
+                </div>
+            </div>
+
+            <div class="drawer-container mx-auto">
+                <!-- Danh sách dọc (Trái) -->
+                <div class="drawer-list scrollbar-hide safe-glow py-2" id="concept-drawer-list"></div>
+                
+                <!-- Khung hiển thị lớn (Phải) -->
+                <div class="drawer-main">
+                    <div class="liquid-glass rounded-2xl overflow-hidden shadow-2xl p-2 w-full aspect-video bg-black relative">
+                        <img id="concept-main-img" src="empty-art.svg" class="w-full h-full object-cover rounded-xl">
+                        
+                        <div class="absolute top-6 right-6 z-20 flex items-center gap-3 liquid-glass rounded-full px-4 py-1.5 backdrop-blur-md bg-black/60 shadow-lg">
+                            <div class="text-[10px] font-bold text-gold tracking-widest" id="concept-counter">1 / 1</div>
+                            <button class="edit-only-inline text-red-400 hover:text-red-300 transition ml-2 border-l border-gray-600 pl-2 cursor-pointer" onclick="deleteCurrentConcept()" title="Xóa ảnh này">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- --- STREAMING_CHUNK: TAB 3: KỸ NĂNG (Drawer) --- -->
+        <div id="tab-skills" class="profile-tab">
+            <div class="w-full max-w-[1400px] flex justify-between items-end mb-6 safe-glow px-10 mx-auto">
+                <h2 class="text-2xl font-title text-gold flex items-center gap-3 tracking-widest uppercase drop-shadow-lg"><span class="star-fantasy">✦</span> BỘ KỸ NĂNG</h2>
+                <div class="edit-only flex gap-4">
+                     <button class="liquid-glass rounded-full liquid-btn px-5 py-2 text-[10px] hover:text-gold text-gray-300 font-bold tracking-widest uppercase" onclick="addSkill()">+ THÊM CHIÊU</button>
+                     <button class="liquid-glass rounded-full liquid-btn px-5 py-2 text-[10px] text-red-400 border-red-500/30 font-bold uppercase hover:bg-red-900/30" onclick="deleteCurrentSkill()">🗑️ XÓA CHIÊU</button>
+                </div>
+            </div>
+
+            <div class="drawer-container mx-auto">
+                <!-- Danh sách Chiêu dọc (Trái) -->
+                <div class="drawer-list scrollbar-hide safe-glow py-2" id="skill-drawer-list"></div>
+                
+                <!-- Màn hình Chi tiết Chiêu (Phải) -->
+                <div class="drawer-main overflow-y-auto scrollbar-hide pb-10 px-2 safe-glow">
+                    <!-- Khung ảnh 16:9 Khổng lồ -->
+                    <div class="w-full aspect-video rounded-2xl relative overflow-hidden group shadow-2xl bg-black liquid-glass p-2 mb-6">
+                        <img id="skill-main-img" src="empty-art.svg" class="w-full h-full object-cover rounded-xl border border-gray-800">
+                        
+                        <!-- Nút Nội Tại/Loại Chiêu (Ghim ở góc trái trên, không bị đè) -->
+                        <div class="absolute top-6 left-6 z-40 liquid-glass bg-black/70 backdrop-blur-md px-6 py-2 rounded-full border border-gold/50 inline-flex items-center justify-center uppercase text-gold text-[10px] font-bold tracking-[0.2em] editable shadow-xl" id="skill-type-text">NỘI TẠI</div>
+
+                        <!-- Nút Đổi ẢNH (Thu nhỏ gọn gàng ở góc phải, không đè chữ) -->
+                        <label class="edit-only absolute top-6 right-6 z-50 liquid-glass rounded-full liquid-btn text-white px-5 py-2 font-bold hover:text-gold border-gold/50 tracking-widest shadow-xl text-[9px] uppercase cursor-pointer transition-all bg-black/60 backdrop-blur-md hover:bg-black/90">
+                            📸 ĐỔI ẢNH <input type="file" accept="image/*" class="hidden" onchange="triggerCrop(this, 'skill_img')">
+                        </label>
+                    </div>
+
+                    <!-- Text Mô tả Chiêu -->
+                    <div class="flex flex-col px-4">
+                        <h3 class="text-3xl font-title font-bold text-white editable drop-shadow-lg mb-4" id="skill-name-text">Tên Kỹ Năng</h3>
+                        <p class="text-gray-300 leading-relaxed editable whitespace-pre-wrap text-sm mb-6 pb-6 border-b border-gray-700/50" id="skill-desc-text">Mô tả kỹ năng...</p>
+                        
+                        <div class="liquid-glass rounded-2xl p-5 border-l-2 border-l-yellow-600 bg-black/20">
+                            <div class="text-[9px] text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2">⚖️ GHI CHÚ</div>
+                            <div class="text-sm text-yellow-500/90 editable italic" id="skill-note-text">Chưa có ghi chú.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HUD Menu (Thanh dưới cùng) -->
+        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-[100] flex items-center gap-12 font-title text-xs tracking-[0.2em] uppercase liquid-glass bg-black/70 rounded-full px-12 py-3.5 shadow-2xl auto-hide">
+            <div class="hud-nav-btn active text-gold" onclick="switchProfileTab('overview', this)">Tổng Quan</div>
+            <span class="star-fantasy text-[10px] opacity-30">✦</span>
+            <div class="hud-nav-btn" onclick="switchProfileTab('concept', this)">Concept</div>
+            <span class="star-fantasy text-[10px] opacity-30">✦</span>
+            <div class="hud-nav-btn" onclick="switchProfileTab('skills', this)">Kỹ Năng</div>
+        </div>
+    </div>
+
+    <!-- --- STREAMING_CHUNK: Modals Cắt ảnh & Cài đặt --- -->
+    <div id="crop-modal" class="screen bg-black/95 z-[999] hidden flex-col items-center justify-center p-6 backdrop-blur-2xl">
+        <h3 class="text-gold font-title text-2xl mb-6 flex items-center gap-4 tracking-widest uppercase drop-shadow-lg"><span class="star-fantasy">✦</span> CĂN CHỈNH ẢNH <span class="star-fantasy">✦</span></h3>
+        <div class="w-full max-w-[900px] h-[60vh] liquid-glass p-2 flex items-center justify-center relative bg-black shadow-2xl rounded-2xl">
+            <img id="crop-image" src="" style="display:block; max-width:100%; max-height:100%;">
+        </div>
+        <div class="flex gap-6 mt-8">
+            <button class="liquid-glass rounded-full liquid-btn text-red-400 hover:bg-red-900/30 px-10 py-3.5 font-bold tracking-widest text-[10px] uppercase" onclick="closeCropModal()">HỦY BỎ</button>
+            <button class="bg-gradient-to-r from-yellow-600 to-yellow-400 text-black font-bold px-12 py-3.5 rounded-full hover:scale-105 transition shadow-[0_0_20px_rgba(212,175,55,0.4)] tracking-widest text-[10px] uppercase" onclick="executeCrop()">XÁC NHẬN & LƯU</button>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="screen bg-black/90 z-[999] hidden items-center justify-center backdrop-blur-xl">
+        <div class="liquid-glass rounded-3xl w-[450px] p-8 flex flex-col gap-6 shadow-2xl">
+            <h3 class="text-xl font-title text-gold border-b border-gray-700/50 pb-4 text-center tracking-widest uppercase">CÀI ĐẶT STUDIO</h3>
+            <div class="grid grid-cols-2 gap-6">
+                <div class="flex flex-col gap-2">
+                    <label class="text-[9px] text-gray-400 uppercase tracking-widest">Màu Vàng</label>
+                    <input type="color" id="set-gold" class="w-full h-12 liquid-glass cursor-pointer rounded-lg p-1">
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="text-[9px] text-gray-400 uppercase tracking-widest">Màu Nền Tối</label>
+                    <input type="color" id="set-bg" class="w-full h-12 liquid-glass cursor-pointer rounded-lg p-1">
+                </div>
+            </div>
+            <div class="flex justify-end gap-4 mt-4">
+                <button class="liquid-glass rounded-full liquid-btn px-8 py-3 text-[10px] text-gray-300 font-bold tracking-widest uppercase" onclick="document.getElementById('settings-modal').classList.remove('active')">ĐÓNG</button>
+                <button class="bg-gold text-black px-10 py-3 rounded-full font-bold text-[10px] tracking-widest hover:scale-105 shadow-[0_0_15px_rgba(212,175,55,0.4)] uppercase" onclick="saveSettings()">ÁP DỤNG</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="custom-overlay" class="screen bg-black/85 z-[9999] hidden items-center justify-center backdrop-blur-xl">
+        <div class="liquid-glass rounded-2xl w-full max-w-[420px] p-8 shadow-2xl text-center flex flex-col items-center border border-gray-700">
+            <h3 id="custom-title" class="text-lg font-title text-gold mb-4 tracking-widest uppercase border-b border-gray-700/50 pb-2 w-full">Thông báo</h3>
+            <p id="custom-message" class="text-gray-300 mb-8 leading-relaxed text-sm w-full whitespace-pre-wrap">Nội dung</p>
+            <div class="flex justify-center gap-4 w-full" id="custom-buttons"></div>
+        </div>
+    </div>
+
+    <!-- --- STREAMING_CHUNK: Javascript Core --- -->
+    <script>
+        function showCustomUI(title, message, buttons) {
+            document.getElementById('custom-title').innerText = title; 
+            document.getElementById('custom-message').innerText = message;
+            const btnContainer = document.getElementById('custom-buttons'); btnContainer.innerHTML = '';
+            buttons.forEach(btn => {
+                const b = document.createElement('button');
+                b.className = btn.primary ? "bg-gold text-black px-8 py-2.5 rounded-full font-bold hover:scale-105 transition tracking-widest text-[10px] uppercase shadow-lg" : "liquid-glass rounded-full px-8 py-2.5 text-gray-300 hover:text-white transition tracking-widest font-bold text-[10px] uppercase";
+                b.innerText = btn.text; 
+                b.onclick = () => { document.getElementById('custom-overlay').classList.remove('active'); if(btn.action) btn.action(); };
+                btnContainer.appendChild(b);
+            });
+            document.getElementById('custom-overlay').classList.add('active');
+        }
+        function customAlert(msg) { showCustomUI("THÔNG BÁO", msg, [{text: "ĐÃ HIỂU", primary: true}]); }
+        function customConfirm(msg, onYes) { showCustomUI("XÁC NHẬN", msg, [{text: "HỦY", primary: false}, {text: "ĐỒNG Ý", primary: true, action: onYes}]); }
+
+        let idleTimer;
+        const cursorGlow = document.getElementById('cursor-glow');
+        function resetIdleTimer(e) {
+            const hideElements = document.querySelectorAll('.auto-hide');
+            hideElements.forEach(el => el.classList.remove('idle'));
+            clearTimeout(idleTimer);
+            if(!isEditMode && !window.matchMedia('(hover: none)').matches) idleTimer = setTimeout(() => hideElements.forEach(el => el.classList.add('idle')), 3000); 
+            
+
+        }
+        window.addEventListener('pointerdown', resetIdleTimer); window.addEventListener('keydown', resetIdleTimer); window.addEventListener('mousemove', resetIdleTimer); window.addEventListener('click', resetIdleTimer); 
+        document.body.addEventListener('mouseleave', () => { cursorGlow.style.opacity = '0'; });
+
+        let champions = [];
+        let globalSettings = { gold: '#d4af37', bg: '#050b14', logoHtml: null };
+        let isEditMode = false; let currentChampIndex = -1; let currentConceptIndex = 0; let currentSkillIndex = 0;
+        let cropperInstance = null; let cropTargetType = '';
+
+
+        const seedData = {"settings": {"gold": "#fcfe98", "bg": "#004984", "font": "'Lora', serif", "logo1": "LEGACY", "logo2": "of", "logo3": "MOUR", "logoHtml": "\n                    LEGACY OF MOUR\n                "}, "champions": [{"id": "c1", "name": "LUNIS", "title": "Thánh Nguyệt Giáng Sinh", "faction": "Hội Đồng Phép Thuật", "roles": ["Pháp Sư", "Trợ Thủ"], "quote": "Ánh trăng sẽ soi sáng con đường...", "avatar": "https://placehold.co/300x400/061121/d4af37?text=Avatar", "splash": "https://placehold.co/1280x720/061121/d4af37?text=Splash+Art", "concepts": [], "skills": [{"type": "NỘI TẠI", "name": "Ánh Trăng", "desc": "Đòn đánh thường gây phép.", "note": "Ghi chú...", "icon": "https://placehold.co/100x100/111/d4af37?text=P", "img": "https://placehold.co/1280x720/111/d4af37?text=Passive+Art"}, {"type": "Chiêu mới", "name": "Tên Chiêu", "desc": "Mô tả...", "note": "Ghi chú...", "icon": "https://placehold.co/200x200/111/d4af37?text=Icon", "img": "https://placehold.co/1920x1080/111/d4af37?text=Skill+16:9"}, {"type": "CHIÊU MỚI", "name": "Tên Chiêu", "desc": "Mô tả...", "note": "Ghi chú...", "icon": "https://placehold.co/200x200/111/d4af37?text=Icon", "img": "https://placehold.co/1920x1080/111/d4af37?text=Skill+16:9"}, {"type": "Chiêu mới", "name": "Tên Chiêu", "desc": "Mô tả...", "note": "Ghi chú...", "icon": "https://placehold.co/200x200/111/d4af37?text=Icon", "img": "https://placehold.co/1920x1080/111/d4af37?text=Skill+16:9"}, {"type": "Chiêu mới", "name": "Tên Chiêu", "desc": "Mô tả...", "note": "Ghi chú...", "icon": "https://placehold.co/200x200/111/d4af37?text=Icon", "img": "https://placehold.co/1920x1080/111/d4af37?text=Skill+16:9"}], "position": "", "quotes": ""}]};
+        let bootReady = false, storageReady = false, pendingSaves = 0, saveQueue = Promise.resolve(), hasUnsavedChanges = false;
+        const clone = value => JSON.parse(JSON.stringify(value));
+        function statusText(message, error=false) { const e=document.getElementById('save-status');e.textContent=message;e.dataset.error=String(error); }
+        function bounded(promise, ms=1400) { let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Storage timeout')),ms)})]).finally(()=>clearTimeout(timer)); }
+        function safeImage(value) { if(typeof value!=='string'||!value||value.includes('placehold.co'))return 'empty-art.svg';return /^(https?:\/\/|data:image\/(png|jpe?g|webp|gif);base64,)/i.test(value)||value==='empty-art.svg'?value:'empty-art.svg'; }
+        function normalizeData(data) {
+            if(!data||!Array.isArray(data.champions)||data.champions.length>1000)throw new Error('File phải chứa danh sách tướng hợp lệ.');
+            const str=(v,f='')=>typeof v==='string'?v:f;
+            const color=(v,f)=>/^#[\da-f]{6}$/i.test(v)?v:f;
+            const settings=data.settings||{};
+            const box=document.createElement('div');box.innerHTML=str(settings.logoHtml);const logoText=(box.textContent||'LEGACY OF MOUR').trim();
+            return {settings:{gold:color(settings.gold,'#fcfe98'),bg:color(settings.bg,'#004984'),font:["'Lora', serif","'Cinzel', serif","'Playfair Display', serif"].includes(settings.font)?settings.font:"'Cinzel', serif",logoHtml:logoText},champions:data.champions.map((c,i)=>{
+                if(!c||typeof c!=='object'||!Array.isArray(c.skills)||!Array.isArray(c.concepts))throw new Error('Cấu trúc kỹ năng hoặc concept không hợp lệ.');
+                return {id:str(c.id,'c'+i),name:str(c.name,'TƯỚNG MỚI'),title:str(c.title),faction:str(c.faction),position:str(c.position),roles:Array.isArray(c.roles)?c.roles.slice(0,2).map(x=>str(x)):[],quotes:str(c.quotes)||str(c.quote),avatar:safeImage(c.avatar),splash:safeImage(c.splash),skills:c.skills.map(k=>({type:str(k.type),name:str(k.name),desc:str(k.desc),note:str(k.note),icon:safeImage(k.icon),img:safeImage(k.img)})),concepts:c.concepts.map(k=>({type:str(k.type,'Mặc định'),name:str(k.name,'Concept'),url:safeImage(k.url)}))};
+            })};
+        }
+        async function initApp() {
+            let data=normalizeData(seedData);
+            try {
+                localforage.config({name:'LegacyOfMourDB',storeName:'StudioData'});
+                const stored=await bounded(localforage.getItem('StudioSnapshot'));
+                if(stored) data=normalizeData(stored);
+                else {
+                    const [settings,list]=await bounded(Promise.all([localforage.getItem('SettingsData'),localforage.getItem('ChampsData')]));
+                    let legacy=list;
+                    if(!legacy){try{legacy=JSON.parse(localStorage.getItem('LegacyOfMour_Data')||'null')}catch{}}
+                    if(legacy)data=normalizeData({settings:settings||data.settings,champions:legacy});
+                }
+                storageReady=true;
+            } catch(error) {statusText('Chưa đọc được bộ nhớ. Xuất file để giữ các thay đổi trong phiên này.',true);}
+            globalSettings=data.settings;champions=data.champions;bootReady=true;
+            applyGlobalSettings();createStars();navigateTo('home');resetIdleTimer();
+            clearTimeout(window.mourBootTimer);document.getElementById('db-loading').style.display='none';
+        }
+        function saveData() {
+            hasUnsavedChanges=true;
+            const snapshot=clone({settings:globalSettings,champions});pendingSaves++;
+            statusText('Đang lưu…');
+            const task=saveQueue.then(async()=>{
+                try {
+                    if(!storageReady)throw new Error('Bộ nhớ chưa sẵn sàng.');
+                    await bounded(localforage.setItem('StudioSnapshot',snapshot),8000);
+                    if(pendingSaves===1){hasUnsavedChanges=false;statusText('Đã lưu trên trình duyệt này');}
+                    return true;
+                }catch(error){
+                    if(error.message==='Storage timeout')storageReady=false;
+                    statusText('Chưa lưu được — hãy dùng Xuất File để giữ dữ liệu.',true);
+                    customAlert(error.name==='QuotaExceededError'?'Bộ nhớ trình duyệt đã đầy. Thay đổi vẫn còn trong phiên này. Hãy Xuất File để sao lưu trước khi đóng trang.':'Không lưu được thay đổi. Hãy Xuất File để giữ dữ liệu trước khi đóng trang.');
+                    return false;
+                }finally{pendingSaves--;}
+            });
+            saveQueue=task;return task;
+        }
+        function saveGlobalSettings() { applyGlobalSettings();return saveData(); }
+        window.addEventListener('beforeunload',e=>{if(hasUnsavedChanges||pendingSaves){e.preventDefault();e.returnValue='';}});
+        function applyGlobalSettings() {
+            document.documentElement.style.setProperty('--gold-color', globalSettings.gold); document.documentElement.style.setProperty('--bg-color', globalSettings.bg); 
+            if(globalSettings.logoHtml) document.getElementById('logo-text').textContent = globalSettings.logoHtml;
+            document.documentElement.style.setProperty('--font-title',globalSettings.font||"'Cinzel', serif");
+        }
+
+        function createStars() {
+            const container=document.getElementById('star-container');container.innerHTML='';
+            for(let i=0;i<60;i++){
+                const star=document.createElement('i'),falling=i<24;
+                star.className=falling?'falling-star':'twinkle-star';
+                star.style.left=Math.random()*100+'%';star.style.top=falling?'-5vh':Math.random()*100+'%';
+                const size=falling?Math.random()*1.8+.8:Math.random()*1.6+.7;
+                star.style.width=star.style.height=size+'px';
+                star.style.animationDuration=(falling?18+Math.random()*22:3+Math.random()*5)+'s';
+                star.style.animationDelay=-(Math.random()*40)+'s';container.appendChild(star);
+            }
+        }
+
+        function navigateTo(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + screenId).classList.add('active');
+            if(screenId === 'list') renderList('Tất cả');
+            resetIdleTimer();
+        }
+
+        function switchProfileTab(tabId, btnElem) {
+            btnElem=btnElem||document.querySelector('.hud-nav-btn[onclick*="'+tabId+'"]');
+            document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active-tab'));
+            document.getElementById('tab-' + tabId).classList.add('active-tab');
+            
+            if(btnElem) {
+                document.querySelectorAll('.hud-nav-btn').forEach(b => b.classList.remove('active', 'text-gold'));
+                btnElem.classList.add('active', 'text-gold');
+            }
+
+            const bg = document.getElementById('p-splash-bg');
+            const overlay = document.getElementById('p-gradient-overlay');
+            if(tabId === 'overview') { 
+                bg.style.opacity = '1'; bg.style.filter = 'blur(0px)'; overlay.style.backgroundColor = 'rgba(0,0,0,0.4)';
+            } else { 
+                bg.style.opacity = '0.3'; bg.style.filter = 'blur(15px)'; overlay.style.backgroundColor = 'rgba(0,0,0,0.8)';
+            }
+        }
+
+        function requestToggleEditMode() {
+            if(!bootReady)return;
+            if(isEditMode) customConfirm("Bạn đã xuất File lưu (Backup) chưa?\nHãy đảm bảo lưu file xuống máy tính thường xuyên.", toggleEditModeActual);
+            else toggleEditModeActual();
+        }
+
+        function toggleEditModeActual() {
+            isEditMode = !isEditMode; document.body.classList.toggle('edit-mode', isEditMode);
+            const btn = document.getElementById('mode-toggle');
+            btn.innerHTML = isEditMode ? "✏ ĐANG SỬA" : "👁 CHẾ ĐỘ: XEM";
+            btn.className = isEditMode ? "liquid-glass rounded-full liquid-btn border-red-500 text-red-400 px-6 py-2.5 text-[10px] font-bold tracking-widest hover:bg-red-900/30 uppercase shadow-lg" : "liquid-glass rounded-full liquid-btn border-gold text-gold px-6 py-2.5 text-[10px] font-bold tracking-widest hover:bg-gold hover:text-black uppercase shadow-lg";
+            
+            document.querySelectorAll('.editable').forEach(el => {
+                if(el.tagName !== 'TEXTAREA') el.contentEditable = isEditMode;
+                if(isEditMode) {
+                    if(el.id === 'logo-text') el.onblur = () => { globalSettings.logoHtml = el.innerText; saveGlobalSettings(); };
+                    else el.onblur = autoSaveProfile;
+                }
+            });
+            if(currentChampIndex >= 0) { renderConceptDrawer(); renderSkillDrawer(); renderQuotes(); }
+            resetIdleTimer(); 
+        }
+        
+        function autoSaveProfile() {
+            if(!isEditMode || currentChampIndex < 0 || !champions[currentChampIndex]) return; const c = champions[currentChampIndex];
+            c.name = document.getElementById('p-name').innerText; c.title = document.getElementById('p-title').innerText;
+            c.roles[0] = document.getElementById('p-role1').innerText; c.roles[1] = document.getElementById('p-role2').innerText;
+            c.faction = document.getElementById('p-faction').innerText; c.position = document.getElementById('p-position').innerText;
+            c.quotes = document.getElementById('p-quote-edit').value;
+            
+            if(c.skills[currentSkillIndex]) {
+                c.skills[currentSkillIndex].type = document.getElementById('skill-type-text').innerText;
+                c.skills[currentSkillIndex].name = document.getElementById('skill-name-text').innerText;
+                c.skills[currentSkillIndex].desc = document.getElementById('skill-desc-text').innerText;
+                c.skills[currentSkillIndex].note = document.getElementById('skill-note-text').innerText;
+            }
+            document.getElementById('bc-champ-name').innerText = c.name; saveData();
+        }
+
+        function filterRole(role, btnElem) {
+            if(btnElem) { document.querySelectorAll('#role-filters button').forEach(b => b.classList.remove('active', 'border-gold', 'text-gold')); btnElem.classList.add('active', 'border-gold', 'text-gold'); }
+            renderList(role);
+        }
+
+        function renderList(roleFilter) {
+            const grid = document.getElementById('champion-grid'); grid.innerHTML = '';
+            champions.forEach((champ, idx) => {
+                let r1 = champ.roles ? champ.roles[0] : ""; let r2 = champ.roles ? champ.roles[1] : "";
+                if (roleFilter === 'Tất cả' || r1 === roleFilter || r2 === roleFilter) {
+                    grid.innerHTML += `
+                        <div class="liquid-glass rounded-2xl cursor-pointer group aspect-[3/4] relative overflow-hidden p-1.5 shadow-xl transition-all duration-300 hover:shadow-[0_15px_30px_rgba(212,175,55,0.4)] hover:-translate-y-2 border border-transparent hover:border-gold/30" onclick="openProfile(${idx})">
+                            <img src="${escapeHtml(champ.avatar)}" class="w-full h-full object-cover rounded-xl transition duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100 bg-black">
+                            <div class="absolute bottom-1 left-1 right-1 bg-gradient-to-t from-black via-black/90 to-transparent pt-12 pb-3 text-center font-title text-base font-bold tracking-widest text-gold z-10 uppercase rounded-b-xl">${escapeHtml(champ.name)}</div>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        function addNewChampion() {
+            champions.push({
+                id: 'c' + Date.now(), name: 'TƯỚNG MỚI', title: 'Danh xưng', faction: 'Phe phái', position: 'Đường', roles: ['Đấu Sĩ', ''], quotes: 'Thoại mẫu...',
+                avatar: 'empty-art.svg', splash: 'empty-art.svg',
+                concepts: [{ type: 'Mặc định', name: 'Concept 1', url: 'empty-art.svg' }], 
+                skills: [{ type: 'Nội tại', name: 'Tên Chiêu', desc: 'Mô tả...', note: 'Ghi chú...', icon: 'empty-art.svg', img: 'empty-art.svg' }]
+            }); saveData(); renderList('Tất cả');
+        }
+
+        function openProfile(idx) {
+            if(!Number.isInteger(idx)||!champions[idx])return;
+            currentChampIndex = idx; const c = champions[idx];
+            document.getElementById('p-splash-bg').src = c.splash; document.getElementById('p-name').innerText = c.name; document.getElementById('bc-champ-name').innerText = c.name;
+            document.getElementById('p-title').innerText = c.title; document.getElementById('p-role1').innerText = c.roles[0] || ''; document.getElementById('p-role2').innerText = c.roles[1] || '';
+            document.getElementById('p-faction').innerText = c.faction || ''; document.getElementById('p-position').innerText = c.position || ''; document.getElementById('p-quote-edit').value = c.quotes || '';
+            
+            renderQuotes(); currentConceptIndex = 0; currentSkillIndex = 0; renderConceptDrawer(); renderSkillDrawer(); 
+            switchProfileTab('overview', document.querySelector('.hud-nav-btn')); navigateTo('profile');
+            if(isEditMode) document.querySelectorAll('.editable').forEach(el => { if(el.tagName!=='TEXTAREA') el.contentEditable=true; });
+        }
+
+        function renderQuotes() {
+            const c = champions[currentChampIndex]; const qList = (c.quotes||"").split('\n').filter(q => q.trim() !== '');
+            document.getElementById('p-quote-display').innerText = qList.length > 0 ? `"${qList[Math.floor(Math.random() * qList.length)]}"` : "...";
+            document.getElementById('p-quote-display').style.display = isEditMode ? 'none' : 'block';
+        }
+
+        function prevChampion() { if(currentChampIndex > 0) openProfile(currentChampIndex - 1); }
+        function nextChampion() { if(currentChampIndex < champions.length - 1) openProfile(currentChampIndex + 1); }
+        function deleteChampion() { customConfirm("Xóa vĩnh viễn tướng này?", () => { champions.splice(currentChampIndex, 1); currentChampIndex=-1; saveData(); navigateTo('list'); }); }
+
+        function renderConceptDrawer() {
+            const c = champions[currentChampIndex]; const listDiv = document.getElementById('concept-drawer-list'); listDiv.innerHTML = '';
+            if(!c.concepts || c.concepts.length === 0) { document.getElementById('concept-main-img').src = 'empty-art.svg'; listDiv.innerHTML='<p class="empty-note">Chưa có concept. Bật chế độ Sửa để thêm ảnh.</p>'; document.getElementById('concept-counter').innerText = "0 / 0"; return; }
+            
+            c.concepts.forEach((con, idx) => {
+                listDiv.innerHTML += `
+                    <div class="drawer-list-item liquid-glass rounded-xl p-2 ${idx === currentConceptIndex ? 'active' : ''}" onclick="selectConcept(${idx})">
+                        <img src="${escapeHtml(con.url)}" class="w-full aspect-video object-cover rounded-lg mb-2 bg-black transition-all">
+                        <div class="text-[12px] text-gray-200 font-bold truncate editable px-1 text-center" onblur="updateConceptName(${idx}, this.innerText)">${escapeHtml(con.name)}</div>
+                        <div class="text-[9px] uppercase tracking-widest text-center mt-1 pb-1 ${con.type === 'Mặc định' ? 'text-gray-400' : 'text-purple-400'}">${escapeHtml(con.type)}</div>
+                    </div>
+                `;
+            });
+            document.getElementById('concept-main-img').src = c.concepts[currentConceptIndex].url; 
+            document.getElementById('concept-counter').innerText = `${currentConceptIndex + 1} / ${c.concepts.length}`;
+            if(isEditMode) document.querySelectorAll('#concept-drawer-list .editable').forEach(el => el.contentEditable = true);
+        }
+        function selectConcept(idx) { currentConceptIndex = idx; renderConceptDrawer(); }
+        function updateConceptName(idx, text) { champions[currentChampIndex].concepts[idx].name = text.trim(); saveData(); }
+        function deleteCurrentConcept() { if(champions[currentChampIndex].concepts.length === 0) return; customConfirm("Xóa ảnh này?", () => { champions[currentChampIndex].concepts.splice(currentConceptIndex, 1); currentConceptIndex = 0; saveData(); renderConceptDrawer(); }); }
+
+        function renderSkillDrawer() {
+            const c = champions[currentChampIndex]; const listDiv = document.getElementById('skill-drawer-list'); listDiv.innerHTML = '';
+            if(!c.skills || c.skills.length === 0) { document.getElementById('skill-main-img').src='empty-art.svg'; ['skill-type-text','skill-name-text','skill-desc-text','skill-note-text'].forEach(id=>document.getElementById(id).innerText=''); listDiv.innerHTML='<p class="empty-note">Chưa có kỹ năng. Bật chế độ Sửa để thêm chiêu.</p>'; return; }
+            
+            c.skills.forEach((sk, idx) => {
+                // Không còn chữ P hay 1, 2, 3
+                listDiv.innerHTML += `
+                    <div class="drawer-list-item liquid-glass rounded-2xl p-4 flex items-center gap-5 ${idx === currentSkillIndex ? 'active' : ''}" onclick="selectSkill(${idx})">
+                        <div class="w-16 h-16 rounded-full relative flex-shrink-0 safe-glow">
+                            <img src="${escapeHtml(sk.icon)}" class="w-full h-full rounded-full object-cover border-[3px] icon-ring ${idx === currentSkillIndex ? 'border-gold' : 'border-gray-600'} transition-all bg-black shadow-lg">
+                            <label class="edit-only absolute -bottom-1 -right-1 bg-black rounded-full w-7 h-7 flex items-center justify-center text-[12px] cursor-pointer hover:bg-gold hover:text-black border border-gray-600 z-10 transition-colors">
+                                ✏️ <input type="file" accept="image/*" class="hidden" onchange="triggerCrop(this, 'skill_icon', ${idx})">
+                            </label>
+                        </div>
+                        <div class="flex flex-col flex-grow overflow-hidden">
+                            <div class="text-[9px] text-gray-400 uppercase tracking-widest mb-1 truncate">${escapeHtml(sk.type || 'Chiêu')}</div>
+                            <div class="text-sm font-bold truncate ${idx === currentSkillIndex ? 'text-gold' : 'text-gray-300'}">${escapeHtml(sk.name || 'Chưa đặt tên')}</div>
+                        </div>
+                    </div>
+                `;
+            }); renderSkillDetail();
+        }
+        function selectSkill(idx) { autoSaveProfile(); currentSkillIndex = idx; renderSkillDrawer(); }
+        
+        function renderSkillDetail() {
+            const sk = champions[currentChampIndex].skills[currentSkillIndex];
+            document.getElementById('skill-main-img').src = sk.img; 
+            document.getElementById('skill-type-text').innerText = sk.type; 
+            document.getElementById('skill-name-text').innerText = sk.name;
+            document.getElementById('skill-desc-text').innerText = sk.desc; 
+            document.getElementById('skill-note-text').innerText = sk.note;
+        }
+        
+        function addSkill() {
+            const c = champions[currentChampIndex]; if(c.skills.length >= 7) { customAlert("Tối đa 7 kỹ năng."); return; }
+            c.skills.push({ type: 'Loại chiêu', name: 'Tên Chiêu', desc: 'Mô tả...', note: 'Ghi chú...', icon: 'empty-art.svg', img: 'empty-art.svg' });
+            saveData(); currentSkillIndex = c.skills.length - 1; renderSkillDrawer();
+        }
+        function deleteCurrentSkill() { customConfirm("Xóa kỹ năng này?", () => { champions[currentChampIndex].skills.splice(currentSkillIndex, 1); currentSkillIndex = 0; saveData(); renderSkillDrawer(); }); }
+
+
+        let cropBusy=false;
+        function triggerCrop(input,target,extraIdx=null) {
+            if(!isEditMode||!input.files?.[0])return;
+            if(target==='concept_add_default'&&champions[currentChampIndex].concepts.filter(c=>c.type==='Mặc định').length>=3){customAlert('Tối đa 3 ảnh Mặc định.');input.value='';return;}
+            const file=input.files[0];input.value='';
+            if(!/^image\//.test(file.type)){customAlert('Vui lòng chọn file ảnh.');return;}
+            if(extraIdx!==null)selectSkill(extraIdx);
+            cropTargetType=target;
+            const reader=new FileReader();reader.onerror=()=>customAlert('Không đọc được ảnh. Vui lòng thử ảnh khác.');
+            reader.onload=()=>{
+                const image=document.getElementById('crop-image');
+                if(cropperInstance){cropperInstance.destroy();cropperInstance=null;}
+                image.onload=()=>{
+                    document.getElementById('crop-modal').classList.add('active');
+                    cropperInstance=new Cropper(image,{aspectRatio:target==='avatar'?3/4:target==='skill_icon'?1:16/9,viewMode:1,dragMode:'move',autoCropArea:1,background:false});image.onload=null;
+                };
+                image.onerror=()=>customAlert('Định dạng ảnh này chưa được hỗ trợ. Hãy dùng JPEG, PNG hoặc WebP.');image.src=reader.result;
+            };reader.readAsDataURL(file);
+        }
+        function closeCropModal(){if(cropBusy)return;document.getElementById('crop-modal').classList.remove('active');if(cropperInstance){cropperInstance.destroy();cropperInstance=null;}}
+        async function executeCrop(){
+            if(!cropperInstance||cropBusy)return;cropBusy=true;
+            const loader=document.getElementById('db-loading');loader.style.display='flex';loader.style.opacity='1';loader.style.pointerEvents='auto';document.getElementById('loading-text').textContent=cropTargetType==='splash'?'ĐANG LƯU SPLASH CHẤT LƯỢNG CAO…':'ĐANG TỐI ƯU ẢNH…';
+            await new Promise(resolve=>setTimeout(resolve,30));
+            try{
+                const requestedWidth=cropTargetType==='splash'?2560:cropTargetType==='skill_icon'?150:cropTargetType==='avatar'?400:1000;
+                const cropData=cropTargetType==='splash'?cropperInstance.getData():null;
+                const width=cropTargetType==='splash'?Math.min(requestedWidth,Math.max(1,Math.round(cropData.width))):requestedWidth;
+                const canvas=cropperInstance.getCroppedCanvas({width,imageSmoothingQuality:'high',fillColor:'#050b14'});
+                if(!canvas)throw new Error('Ảnh chưa sẵn sàng, vui lòng thử lại.');
+                const img=canvas.toDataURL('image/jpeg',cropTargetType==='splash'?0.94:0.75),c=champions[currentChampIndex];
+                if(cropTargetType==='avatar'||cropTargetType==='splash')c[cropTargetType]=img;
+                else if(cropTargetType==='skill_img')c.skills[currentSkillIndex].img=img;
+                else if(cropTargetType==='skill_icon')c.skills[currentSkillIndex].icon=img;
+                else{c.concepts.push({type:cropTargetType==='concept_add_default'?'Mặc định':'Skin',name:cropTargetType==='concept_add_default'?'Concept':'Skin',url:img});currentConceptIndex=c.concepts.length-1;}
+                cropBusy=false;closeCropModal();
+                if(cropTargetType==='avatar'||cropTargetType==='splash')openProfile(currentChampIndex);else if(cropTargetType.startsWith('concept'))renderConceptDrawer();else renderSkillDrawer();
+                loader.style.display='none';await saveData();
+            }catch(error){customAlert(error.message||'Không xử lý được ảnh. Vui lòng thử ảnh khác.');}
+            finally{cropBusy=false;loader.style.display='none';}
+        }
+
+        // Cài đặt & File
+        function openSettings() { document.getElementById('set-gold').value = globalSettings.gold; document.getElementById('set-bg').value = globalSettings.bg; document.getElementById('settings-modal').classList.add('active'); }
+        function saveSettings() { globalSettings.gold = document.getElementById('set-gold').value; globalSettings.bg = document.getElementById('set-bg').value; saveGlobalSettings(); document.getElementById('settings-modal').classList.remove('active'); }
+
+        function exportData(){
+            if(isEditMode)autoSaveProfile();
+            const blob=new Blob([JSON.stringify({settings:globalSettings,champions},null,2)],{type:'application/json'});
+            const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='LegacyOfMour_Data_'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+        }
+        async function importData(event){
+            const input=event.target,file=input.files?.[0];if(!file)return;input.value='';
+            try{
+                const imported=normalizeData(JSON.parse(await file.text()));
+                customConfirm('Thay dữ liệu hiện tại bằng '+imported.champions.length+' tướng trong file này? Bạn nên Xuất File trước để giữ bản hiện tại.',async()=>{
+                    globalSettings=imported.settings;champions=imported.champions;currentChampIndex=-1;
+                    applyGlobalSettings();navigateTo('list');
+                    if(await saveData())customAlert('Đã nhập và lưu dữ liệu thành công.');
+                });
+            }catch(error){customAlert('File dữ liệu không hợp lệ. '+error.message);}
+        }
+        function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+        document.getElementById('p-quote-edit').addEventListener('input',autoSaveProfile);
+        document.addEventListener('keydown',e=>{
+            if(e.key==='Escape'){closeCropModal();document.getElementById('settings-modal').classList.remove('active');}
+            if((e.key==='Enter'||e.key===' ')&&e.target.matches('[role=button]')&&!e.target.isContentEditable){e.preventDefault();e.target.click();}
+        });
+        function enhanceControls(){document.querySelectorAll('[onclick]:not(button):not(input):not(label)').forEach(e=>{e.setAttribute('role','button');e.tabIndex=0;});document.querySelectorAll('img:not([alt])').forEach(e=>e.alt='');}
+        new MutationObserver(enhanceControls).observe(document.body,{childList:true,subtree:true});enhanceControls();
+        if(document.modelContext?.registerTool){
+            const lifecycle=new AbortController();
+            const register=tool=>{try{Promise.resolve(document.modelContext.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{});}catch{}};
+            register({name:'list_champions',description:'Read the current Legacy of Mour champion list.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:true},execute:()=>({champions:champions.map(c=>({id:c.id,name:c.name,roles:c.roles}))})});
+            register({name:'open_champion',description:'Open an existing champion profile and tab without changing its data.',inputSchema:{type:'object',properties:{id:{type:'string'},tab:{type:'string',enum:['overview','concept','skills']}},required:['id'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:true},execute:input=>{const i=champions.findIndex(c=>c.id===input?.id);if(i<0||input.tab&&!['overview','concept','skills'].includes(input.tab))throw new Error('Invalid champion or tab');openProfile(i);switchProfileTab(input.tab||'overview');return {id:champions[i].id,tab:input.tab||'overview'};}});
+            window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});
+        }
+        function startPointerEffects(){
+            const canvas=document.getElementById('cursor-trail');
+            const ctx=canvas.getContext?.('2d');if(!ctx)return;
+            const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
+            const fine=window.matchMedia('(hover: hover) and (pointer: fine)');
+            let particles=[],frame=0,lastTime=0,lastEmit=0,visible=false,pointerX=0,pointerY=0,glowX=0,glowY=0,color='#fcfe98';
+            const allowed=()=>fine.matches&&!reduced.matches&&!document.hidden;
+            function resize(){const dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.round(window.innerWidth*dpr);canvas.height=Math.round(window.innerHeight*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);}
+            function stop(){cancelAnimationFrame(frame);frame=0;particles=[];visible=false;ctx.clearRect(0,0,window.innerWidth,window.innerHeight);cursorGlow.style.opacity='0';}
+            function render(now){
+                frame=0;if(!allowed()){stop();return;}
+                const dt=Math.min((now-lastTime)/1000||.016,.05);lastTime=now;
+                ctx.clearRect(0,0,window.innerWidth,window.innerHeight);
+                const ease=1-Math.exp(-14*dt);glowX+=(pointerX-glowX)*ease;glowY+=(pointerY-glowY)*ease;
+                cursorGlow.style.left=glowX+'px';cursorGlow.style.top=glowY+'px';
+                particles=particles.filter(p=>p.life>0);
+                for(const p of particles){
+                    p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;
+                    const alpha=Math.max(0,p.life/p.maxLife);ctx.globalAlpha=alpha*.8;ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=6;
+                    ctx.beginPath();ctx.arc(p.x,p.y,p.size*alpha,0,Math.PI*2);ctx.fill();
+                    if(p.spark){ctx.strokeStyle=color;ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(p.x-3*alpha,p.y);ctx.lineTo(p.x+3*alpha,p.y);ctx.moveTo(p.x,p.y-3*alpha);ctx.lineTo(p.x,p.y+3*alpha);ctx.stroke();}
+                }
+                ctx.globalAlpha=1;ctx.shadowBlur=0;
+                if(particles.length||(visible&&(Math.abs(pointerX-glowX)+Math.abs(pointerY-glowY)>0.3)))frame=requestAnimationFrame(render);
+            }
+            window.addEventListener('pointermove',event=>{
+                if(event.pointerType==='touch'||!allowed())return;
+                pointerX=event.clientX;pointerY=event.clientY;
+                if(!visible){glowX=pointerX;glowY=pointerY;visible=true;}
+                cursorGlow.style.opacity='1';const now=performance.now();
+                if(now-lastEmit>22){
+                    color=getComputedStyle(document.documentElement).getPropertyValue('--gold-color').trim()||'#fcfe98';
+                    for(let i=0;i<2;i++){const life=.4+Math.random()*.35;particles.push({x:pointerX+(Math.random()-.5)*10,y:pointerY+(Math.random()-.5)*10,vx:(Math.random()-.5)*20,vy:12+Math.random()*20,size:.7+Math.random()*1.1,life,maxLife:life,spark:Math.random()>.65});}
+                    if(particles.length>64)particles.splice(0,particles.length-64);lastEmit=now;
+                }
+                if(!frame){lastTime=now;frame=requestAnimationFrame(render);}
+            },{passive:true});
+            document.documentElement.addEventListener('pointerleave',()=>{visible=false;cursorGlow.style.opacity='0';});
+            document.addEventListener('visibilitychange',()=>{document.body.classList.toggle('effects-paused',document.hidden);if(document.hidden)stop();});
+            reduced.addEventListener('change',stop);fine.addEventListener('change',stop);
+            window.addEventListener('resize',resize,{passive:true});window.addEventListener('pagehide',stop);resize();
+        }
+        initApp();
+        startPointerEffects();
+    </script>
+</body>
 </html>
