@@ -1,63 +1,34 @@
 # Legacy of Mour Studio
 
-Kho mã chính thức của website **Legacy of Mour Studio** thuộc Mour Studio.
+Website: https://labmourstudio.github.io/MourStudio_LegacyofMour/
 
-## Trạng thái hiện tại
+Đây là bản GitHub Pages độc lập. Nguồn xuất bản: nhánh `main`, thư mục `docs`.
+Không triển khai repository này vào dự án ChatGPT Sites cũ.
 
-- Website hiện tại đang hoạt động và được giữ nguyên làm **màn hình quản trị (Admin)**.
-- Màn hình công khai dành cho người xem sẽ được phát triển thành một giao diện riêng trong giai đoạn sau.
-- Màn hình công khai chỉ được đọc dữ liệu đã được duyệt công khai; không được truy cập trực tiếp tài khoản, lịch sử nội bộ hoặc chức năng Admin.
-- Mã nguồn đầy đủ của phiên bản đang chạy **chưa được nhập vào kho này**. Chỉ nhập sau khi tệp nguồn được xác minh đúng phiên bản và đã kiểm tra thông tin nhạy cảm.
+## Chỉnh sửa và dữ liệu
 
-Website hiện tại: https://legacy-of-mour-studio.theleon-studio.chatgpt.site
+`docs/index.html` chứa giao diện và luồng chỉnh sửa/nhập/xuất. `docs/assets/studio-refinements.css` định nghĩa khung kính, bố cục danh sách và hồ sơ. `docs/assets/studio-refinements.js` xử lý bộ lọc vai trò/vị trí và giọng nhân vật.
 
-## Định hướng kiến trúc
+Thay đổi nội dung được lưu trong IndexedDB trên trình duyệt đang dùng. Giữ nguyên tên database `LegacyOfMourDB`, store `StudioData` và key `StudioSnapshot` để bảo toàn dữ liệu cũ. Dữ liệu người dùng không tự được đẩy lên GitHub hoặc đồng bộ giữa thiết bị.
 
-Hệ thống được chia thành hai bề mặt nhưng dùng chung dữ liệu đã kiểm soát:
+Dùng Xuất File để sao lưu JSON gồm nhân vật, ảnh và giọng. Khi nhập JSON cũ không có giọng, hai ô giọng được khởi tạo rỗng. Không thay dữ liệu hiện hành bằng dữ liệu mẫu khi cập nhật giao diện.
 
-1. **Admin**
-   - Đăng nhập và duyệt tài khoản.
-   - Quản lý tướng, nội dung, kỹ năng, concept và splash art.
-   - Quản lý font, định dạng chữ, vị trí hiển thị và lịch sử chỉnh sửa.
-   - Tải và quản lý ảnh chất lượng cao.
-2. **Public**
-   - Hiển thị danh sách tướng và hồ sơ đã được duyệt.
-   - Không hiển thị bản nháp, dữ liệu người dùng hoặc lịch sử nội bộ.
-   - Không sử dụng thông tin đăng nhập Admin.
-   - Có thể bổ sung nội dung Mouravia và SEO trong các phiên bản sau.
+Bản mã nguồn công khai được tiếp nhận tại commit `cc9aa6fcd9b289af0ba4c0878ccc2d7ac7bf36e3` không có backend đăng nhập hoặc D1/R2. Nút Chỉnh sửa chỉ thao tác bản dữ liệu trong trình duyệt. Không xem chế độ Xem/Sửa là bảo mật máy chủ. Các tài khoản, quyền Admin và lịch sử của Site cũ không được chuyển theo.
 
-## Dữ liệu
+## Giao diện và âm thanh
 
-- D1 giữ dữ liệu có cấu trúc, trạng thái và lịch sử.
-- R2 giữ ảnh và tệp xuất.
-- Màn hình công khai không kết nối trực tiếp bằng khóa quản trị; dữ liệu công khai phải đi qua API chỉ-đọc do backend kiểm soát.
-- Không dùng GitHub làm nơi lưu dữ liệu đang vận hành.
+- Viền liền, bo góc nhất quán, kính trong với highlight nhẹ; không lặp sao trang trí quanh khung.
+- Tên/danh hiệu không có khung. Vai trò và câu nói cùng ẩn sau 3 giây ngừng thao tác ở chế độ xem; hiện lại khi tương tác. Chế độ sửa luôn hiển thị.
+- Bộ lọc vai trò/vị trí xếp bên trái; thu gọn trên màn hình nhỏ.
+- Concept/Kỹ năng ở góc phải dưới; bấm lại tab đang mở hoặc tên trên đường dẫn để về hồ sơ.
+- Mỗi nhân vật có hai ô âm thanh, tối đa 2 MB/30 giây mỗi ô. MP3 ngắn được ưu tiên; M4A/OGG/WAV/WebM phụ thuộc trình duyệt.
+- Mỗi lần mở nhân vật phát ngẫu nhiên một giọng đã thêm; chuyển nhân vật, rời trang, bật chế độ sửa hoặc tắt giọng sẽ dừng âm thanh. Không tự phát trong chế độ sửa. Có nghe thử, nghe lại và tắt giọng.
+- Trình duyệt có thể yêu cầu bấm Nghe giọng trước khi cho phát âm thanh. Không tải tệp giọng mẫu từ dịch vụ ngoài.
 
-## Quy tắc an toàn
+## Tiếp tục phát triển
 
-Không đưa các nội dung sau lên repository:
+Lấy bản mới nhất từ repository này trước khi sửa. Kiểm tra thay đổi cục bộ và dữ liệu JSON cũ trước khi đẩy lên nhánh xuất bản. Không đưa mật khẩu, token, `.env`, dữ liệu tài khoản hoặc bản sao riêng tư lên GitHub.
 
-- Mật khẩu, mã cổng hoặc thông tin đăng nhập.
-- API key, token, cookie, OAuth secret hoặc khóa truy cập.
-- Tệp `.env` thật.
-- Bản sao D1/R2 chứa dữ liệu riêng tư.
-- Danh sách tài khoản, email đăng ký hoặc lịch sử Admin.
-- ZIP nguồn chưa được xác minh.
+Chạy `node --test tests/refinements.test.cjs` để kiểm tra dữ liệu giọng, phát một giọng mỗi lần, giới hạn tệp và việc đổi nhân vật/nhập dữ liệu trong lúc tệp đang được đọc.
 
-Chỉ đưa migration cơ sở dữ liệu lên GitHub; không đưa dữ liệu thật của cơ sở dữ liệu.
-
-## Quy trình cập nhật
-
-1. Xác minh đúng nguồn và phiên bản.
-2. Kiểm tra thay đổi trên bản xem trước.
-3. Không ghi đè dữ liệu đang chạy bằng dữ liệu mẫu.
-4. Giữ lịch sử thay đổi bằng commit rõ ràng.
-5. Chỉ triển khai lên website sau khi đã kiểm tra đúng dự án và đúng môi trường.
-
-## Trạng thái chức năng
-
-- Admin hiện tại: **Đang hoạt động**.
-- Kho mã GitHub: **Đã khởi tạo**.
-- Nhập mã nguồn phiên bản hiện hành: **Chờ tệp nguồn đã xác minh**.
-- Màn hình công khai: **Chưa triển khai**.
-- WordPress/SEO: **Định hướng tương lai, chưa chốt nền tảng triển khai**.
+Backend đăng nhập và đồng bộ dữ liệu, màn hình công khai riêng, WordPress và SEO là các phần phát triển tiếp theo, chưa được triển khai trong bản này.
